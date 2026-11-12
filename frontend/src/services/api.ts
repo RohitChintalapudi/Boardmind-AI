@@ -12,7 +12,10 @@ import {
 } from '../types';
 
 const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
-const API_BASE_URL = isLocalhost ? 'http://localhost:8001/api' : 'http://127.0.0.1:8001/api';
+const defaultApiBaseUrl = isLocalhost ? 'http://localhost:8001/api' : 'http://127.0.0.1:8001/api';
+
+// Allow deployment-specific overrides without editing source (see .env.example).
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.trim() || defaultApiBaseUrl;
 
 export class ApiError extends Error {
   status?: number;
