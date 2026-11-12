@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node / frontend build
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs and scratch files
+*.log
+_structure.txt
+routes_check.txt
+push_result.txt
+
+# ML datasets and training artifacts (large, reproducible)
+datasets/
+runs/
+notebooks/*.pt
+/yolov8n.pt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
