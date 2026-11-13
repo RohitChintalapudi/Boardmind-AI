@@ -67,7 +67,7 @@ Held-out **test split** (177 images), champion model `exp1_aug_perspective_scale
 | ⚡ | **Live processing timeline** — five-stage progress feedback in the UI |
 | 🔍 | **Side-by-side review** — toggle between YOLO bounding boxes and the cropped/enhanced board |
 | ✏️ | **Editable canvas** — fix OCR mistakes directly in the browser |
-| 📤 | **One-click export** — copy or download notes as Markdown (`.md`) or plain text (`.txt`) |
+| 📤 | **One-click export** — copy notes, or download as Markdown (`.md`), plain text (`.txt`), or a paginated **A4 PDF** |
 | 🩺 | **System diagnostics** — live model, hardware, and engine status via `/api/health` |
 
 ---
@@ -448,7 +448,7 @@ Priority order with graceful fallback:
 
 | Layer | Technologies |
 | :--- | :--- |
-| **Frontend** | React 19, TypeScript, Vite 8, Tailwind CSS v4, lucide-react, marked, KaTeX, html2pdf.js |
+| **Frontend** | React 19, TypeScript, Vite 8, Tailwind CSS v4, lucide-react, marked, KaTeX, html2canvas-pro, jsPDF |
 | **Backend** | FastAPI, Uvicorn, Pydantic v2, Python 3.11 |
 | **Vision** | Ultralytics YOLOv8n, PyTorch (CPU), OpenCV, Pillow, NumPy |
 | **OCR / HTR** | RapidOCR (ONNX Runtime), optional PyTorch DeepCRNN |
@@ -690,6 +690,8 @@ To reproduce the model audit and metrics:
 | First request is slow | Models load at startup; the first inference also warms up ONNX/PyTorch caches. |
 | OCR quality is poor | Use brighter, glare-free photos and pass a `topic_hint` to improve note reconstruction. |
 | `ModuleNotFoundError: rapidocr_onnxruntime` | Install optional engines: `pip install rapidocr-onnxruntime`. |
+| PDF export fails with `unsupported color function "oklch"` | Fixed in the current code by using `html2canvas-pro`. If you see it, reinstall frontend dependencies (`npm install`) so the old `html2pdf.js` bundle is gone. |
+| PDF export button does nothing | Check the browser console. The current implementation renders the notes with `html2canvas-pro` and paginates them with `jsPDF`, so no print dialog or popup permission is required. |
 
 ---
 
