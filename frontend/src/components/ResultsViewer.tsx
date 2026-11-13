@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas-pro';
+import { jsPDF } from 'jspdf';
 import {
   Copy,
   Check,
@@ -68,36 +69,59 @@ export const ResultsViewer: React.FC<ResultsViewerProps> = ({ result, onReset })
 
     setIsExportingPdf(true);
     try {
-      const cleanTitle = currentNotes.title.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      const cleanTitle =
+        currentNotes.title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'boardmind';
       const filename = `${cleanTitle}_study_notes.pdf`;
 
-      const opt = {
-        margin: [12, 12, 12, 12],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#090d16'
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait'
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
+      // html2canvas-pro supports modern CSS color functions (oklch/oklab/…)
+      // emitted by Tailwind v4, unlike the html2canvas bundled in html2pdf.js.
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#090d16',
+      });
 
-      // Handle default export variation across bundlers
-      const pdfWorker = typeof (html2pdf as any).default === 'function'
-        ? (html2pdf as any).default
-        : html2pdf;
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const usableWidth = pageWidth - margin * 2;
+      const usableHeight = pageHeight - margin * 2;
 
-      await pdfWorker().set(opt).from(element).save();
+      // Slice the rendered canvas into page-sized strips so every PDF page is
+      // a proper A4 image instead of one giant image cropped by the viewer.
+      const pageSliceHeight = Math.floor((usableHeight / usableWidth) * canvas.width);
+      let offsetY = 0;
+      let pageIndex = 0;
+
+      while (offsetY < canvas.height && pageIndex < 50) {
+        const sliceHeight = Math.min(pageSliceHeight, canvas.height - offsetY);
+        const slice = document.createElement('canvas');
+        slice.width = canvas.width;
+        slice.height = sliceHeight;
+        const ctx = slice.getContext('2d');
+        if (!ctx) throw new Error('Could not create PDF canvas context.');
+
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(0, 0, slice.width, slice.height);
+        ctx.drawImage(canvas, 0, offsetY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+
+        const sliceData = slice.toDataURL('image/jpeg', 0.95);
+        const sliceHeightMm = (sliceHeight / canvas.width) * usableWidth;
+
+        if (pageIndex > 0) pdf.addPage();
+        pdf.addImage(sliceData, 'JPEG', margin, margin, usableWidth, sliceHeightMm, undefined, 'FAST');
+
+        offsetY += sliceHeight;
+        pageIndex += 1;
+      }
+
+      pdf.save(filename);
     } catch (err) {
       console.error('Failed to generate PDF:', err);
-      alert('Could not export PDF. Please check your browser print permissions.');
+      const detail = err instanceof Error ? err.message : String(err);
+      alert(`Could not export PDF: ${detail}`);
     } finally {
       setIsExportingPdf(false);
     }
