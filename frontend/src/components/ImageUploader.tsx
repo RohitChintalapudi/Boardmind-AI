@@ -68,32 +68,36 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({ onProcess, isProce
   const handleLoadSample = async () => {
     setErrorMsg(null);
     try {
-      const sampleBlob = await fetch('/sample_whiteboard.jpg').then(r => r.blob()).catch(async () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = 500;
-        const ctx = canvas.getContext('2d')!;
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillRect(0, 0, 800, 500);
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 14;
-        ctx.strokeRect(20, 20, 760, 460);
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 32px sans-serif';
-        ctx.fillText('Machine Learning 101!', 60, 80);
-        ctx.font = '20px sans-serif';
-        ctx.fillText('Traditional: Data + Program -> Output', 60, 140);
-        ctx.fillText('Machine Learning: Data + Output -> Program', 60, 190);
-        ctx.fillText('Supervised: Classification, Regression', 60, 240);
-        ctx.fillText('Unsupervised: Clustering, Association', 60, 290);
-        ctx.fillText('* A ML model is only as good as the data', 60, 350);
-        ctx.fillText('* Avoid Overfitting', 60, 390);
-        return new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/jpeg'));
-      });
+      const sampleBlob = await fetch('/sample_whiteboard.jpg', { cache: 'no-cache' })
+        .then(r => {
+          if (!r.ok) throw new Error(`Sample image request failed: ${r.status}`);
+          return r.blob();
+        })
+        .catch(async () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = 800;
+          canvas.height = 500;
+          const ctx = canvas.getContext('2d')!;
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(0, 0, 800, 500);
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 14;
+          ctx.strokeRect(20, 20, 760, 460);
+          ctx.fillStyle = '#0f172a';
+          ctx.font = 'bold 32px sans-serif';
+          ctx.fillText('Machine Learning 101!', 60, 80);
+          ctx.font = '20px sans-serif';
+          ctx.fillText('Traditional: Data + Program -> Output', 60, 140);
+          ctx.fillText('Machine Learning: Data + Output -> Program', 60, 190);
+          ctx.fillText('Supervised: Classification, Regression', 60, 240);
+          ctx.fillText('Unsupervised: Clustering, Association', 60, 290);
+          ctx.fillText('* A ML model is only as good as the data', 60, 350);
+          ctx.fillText('* Avoid Overfitting', 60, 390);
+          return new Promise<Blob>((resolve) => canvas.toBlob((b) => resolve(b!), 'image/jpeg'));
+        });
 
       const file = new File([sampleBlob], 'sample_lecture_whiteboard.jpg', { type: 'image/jpeg' });
       handleFile(file);
-      setTopicHint('Machine Learning 101');
     } catch (err) {
       setErrorMsg('Could not load sample. Please upload your whiteboard image.');
     }
