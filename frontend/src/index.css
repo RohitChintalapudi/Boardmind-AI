@@ -1,6 +1,43 @@
 @import "tailwindcss";
 @import "katex/dist/katex.min.css";
 
+/* Processing modal animations */
+@keyframes boardmind-overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes boardmind-modal-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes boardmind-progress-shimmer {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(450%); }
+}
+
+.animate-overlay-fade {
+  animation: boardmind-overlay-fade 0.2s ease-out;
+}
+
+.animate-modal-pop {
+  animation: boardmind-modal-pop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-progress-shimmer {
+  animation: boardmind-progress-shimmer 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-overlay-fade,
+  .animate-modal-pop,
+  .animate-progress-shimmer {
+    animation: none;
+  }
+}
+
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;

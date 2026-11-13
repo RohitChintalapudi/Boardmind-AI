@@ -110,9 +110,11 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Processing Progress Timeline */}
-        {processingStage !== 'idle' && !result && (
-          <ProcessingTimeline stage={processingStage} />
+        {/* Processing Progress Modal */}
+        {processingStage !== 'idle' && processingStage !== 'error' && !result && (
+          <div className="animate-overlay-fade fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+            <ProcessingTimeline stage={processingStage} />
+          </div>
         )}
 
         {/* Dynamic View: Uploader vs Results */}
